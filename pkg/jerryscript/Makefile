@@ -7,8 +7,8 @@ PKG_LICENSE=Apache-2.0
 include $(RIOTBASE)/pkg/pkg.mk
 
 JERRY_PROFILE ?= minimal # Other possible values are es.next, es5.1 and es2015-subset
-JERRY_HEAP ?= 16  # kB
-JERRY_STACK ?= 1  # kB
+JERRY_HEAP ?= 160  # kB
+JERRY_STACK ?= 0  # kB
 JERRY_GC_LIMIT ?= 0  # Use default value, e.g. 1/32 of total heap size
 JERRY_GC_MARK_LIMIT ?= 8  # maximum recursion depth during GC mark phase
 
@@ -61,7 +61,8 @@ $(PKG_BUILD_DIR)/Makefile:
 	 -DJERRY_GC_LIMIT=$(JERRY_GC_LIMIT) \
 	 -DJERRY_GC_MARK_LIMIT=$(JERRY_GC_MARK_LIMIT) \
 	 -DJERRY_STACK_LIMIT=$(JERRY_STACK) \
-	 -DJERRY_GLOBAL_HEAP_SIZE=$(JERRY_HEAP)
+	 -DJERRY_GLOBAL_HEAP_SIZE=$(JERRY_HEAP) \
+	 -DJERRY_ERROR_MESSAGES=0
 
 clean::
 	@rm -rf $(PKG_BUILD_DIR)
