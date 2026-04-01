@@ -1,9 +1,6 @@
 /*
- * Copyright (C) 2023 Otto-von-Guericke-Universität Magdeburg
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
+ * SPDX-FileCopyrightText: 2023 Otto-von-Guericke-Universität Magdeburg
+ * SPDX-License-Identifier: LGPL-2.1-only
  */
 
 /**
@@ -55,10 +52,14 @@
 /* In order to run the periph_uart test all of the following needs to be true:
  * - periph_uart needs to be used
  * - an I/O mapping for the UART at D0/D1 needs to be provided
- * - this UART dev is not busy with stdio
+ * - this UART dev is not busy with stdio (either not using `stdio_uart` or a different UART is used for stdio)
  */
 #if defined(ARDUINO_UART_D0D1) && defined(MODULE_PERIPH_UART)
-#  define ENABLE_UART_TEST (STDIO_UART_DEV != ARDUINO_UART_D0D1)
+#  if MODULE_STDIO_UART
+#    define ENABLE_UART_TEST (STDIO_UART_DEV != ARDUINO_UART_D0D1)
+#  else
+#    define ENABLE_UART_TEST 1
+#  endif
 #  define UART_TEST_DEV ARDUINO_UART_D0D1
 #else
 #  define ENABLE_UART_TEST 0
@@ -168,6 +169,7 @@
 #  endif
 #endif
 
+NONSTRING
 static const char testdata[8] = "Selftest";
 static const spi_t spi_buses[] = {
 #ifdef ARDUINO_SPI_D11D12D13
@@ -789,6 +791,9 @@ static bool periph_uart_rxtx_test(uint32_t symbolrate, uint32_t timer_freq)
     long_delay();
     failed |= TEST(memcmp(testdata, serial_buf.data, sizeof(serial_buf.data)) == 0);
     failed |= TEST(serial_buf.pos == sizeof(testdata));
+
+    /* disable UART again, in case it is a shared peripheral */
+    uart_poweroff(UART_TEST_DEV);
 
     return failed;
 }

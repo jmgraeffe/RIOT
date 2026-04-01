@@ -6,6 +6,8 @@
  * details.
  */
 
+#pragma once
+
 /**
  * @defgroup    sys_string_utils    Utility functions that are missing in `string.h`
  * @ingroup     sys
@@ -21,6 +23,7 @@
  * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
  */
 
+#include <assert.h>
 #include <errno.h>
 #include <stdint.h>
 /* if explicit_bzero() is provided by standard C lib, it may be defined in
@@ -29,13 +32,89 @@
 #include <strings.h>
 #include <sys/types.h>
 
+#include "flash_utils.h"
 #include "modules.h"
-
-#ifndef STRING_UTILS_H
-#define STRING_UTILS_H
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+/**
+ * @brief   String Writer structure.
+ *          Helper for writing multiple formatted strings to a buffer
+ */
+typedef struct {
+    const char *start;  /**< start of the target buffer */
+    char *position;     /**< current write pointer      */
+    size_t capacity;    /**< remaining capacity of the buffer */
+} string_writer_t;
+
+/**
+ * @brief   Initialize a string writer structure
+ *
+ * @param[out]  sw      String Writer object to initialize
+ * @param[in]   buffer  destination buffer
+ * @param[in]   len     size of the destination buffer
+ */
+static inline void string_writer_init(string_writer_t *sw, void *buffer, size_t len)
+{
+    assert(buffer && len);
+
+    sw->start = buffer;
+    sw->position = buffer;
+    sw->capacity = len;
+    sw->position[0] = 0;
+}
+
+/**
+ * @brief   Get the size of the string contained by the string writer
+ * @param[in]   sw      String Writer to query
+ * @return      size of the string
+ */
+static inline size_t string_writer_len(const string_writer_t *sw)
+{
+    return sw->position - sw->start;
+}
+
+/**
+ * @brief   Get the string contained by the string writer
+ * @param[in]   sw      String Writer to query
+ * @return      the string assembled by string writer
+ */
+static inline const char *string_writer_str(const string_writer_t *sw)
+{
+    return sw->start;
+}
+
+#ifndef DOXYGEN
+/**
+ * @brief   internal helper macro
+ */
+#if IS_ACTIVE(HAS_FLASH_UTILS_ARCH)
+#define __swprintf flash_swprintf
+#else
+#define __swprintf swprintf
+__attribute__ ((format (printf, 2, 3)))
+#endif
+int __swprintf(string_writer_t *sw, FLASH_ATTR const char *restrict format, ...);
+#else
+/**
+ * @brief   Write a formatted string to a buffer
+ *          The string will be truncated if there is not enough space left in
+ *          the destination buffer.
+ *          A terminating `\0` character is always included.
+ *
+ * @param[in]   sw      String Writer to write to
+ * @param[in]   format  format string to write
+ *
+ * @return      number of bytes written on success
+ * @retval      -E2BIG if the string was truncated
+ */
+int swprintf(string_writer_t *sw, FLASH_ATTR const char *restrict format, ...);
+#endif /* DOXYGEN */
+
+#if IS_ACTIVE(HAS_FLASH_UTILS_ARCH)
+#define swprintf(sw, fmt, ...) flash_swprintf(sw, TO_FLASH(fmt), ## __VA_ARGS__)
 #endif
 
 /* explicit_bzero is provided if:
@@ -103,9 +182,39 @@ ssize_t strscpy(char *dest, const char *src, size_t count);
  */
 const void *memchk(const void *data, uint8_t c, size_t len);
 
+/**
+ * @brief   Reverse the order of bytes in a buffer
+ *
+ * @param[in, out]  buf     The buffer to reverse
+ * @param[in]       len     Size of the buffer
+ */
+void reverse_buf(void *buf, size_t len);
+
+/**
+ * @brief   XOR the bytes of two buffers and store the result in @p dst
+ *
+ * The buffers may overlap.
+ * It is assumed that @p dst can hold at least @p size bytes.
+ *
+ * @param[in,out]   dst     Destination buffer
+ * @param[in]       src     Source buffer
+ * @param[in]       size    Number of bytes to XOR
+ */
+void memxor(void *dst, void* src, size_t size);
+
+/**
+ * @brief   Copies @p src to @p dst in reverse order.
+ *
+ * It is assumed the @p dst can hold at least @p size bytes.
+ *
+ * @param[out]      dst     Destination buffer
+ * @param[in]       src     Source buffer
+ * @param[in]       size    Number of bytes to copy
+ */
+void memcpy_reversed(void *restrict dst, const void *restrict src, size_t size);
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* STRING_UTILS_H */
 /** @} */

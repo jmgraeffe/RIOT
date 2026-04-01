@@ -6,16 +6,13 @@ USEMODULE += shell_cmds_default
 USEMODULE += ps
 USEMODULE += ztimer_msec
 
-# Use a terminal that does not introduce extra characters into the stream.
-RIOT_TERMINAL ?= socat
+# JSON help is needed by test script
+USEMODULE += shell_builtin_cmd_help_json
 
 APP_SHELL_FMT ?= NONE
 
 # microbit qemu failing currently
 TEST_ON_CI_BLACKLIST += microbit
-
-# requires #19005
-TEST_ON_CI_BLACKLIST += native native64
 
 include $(RIOTBASE)/Makefile.include
 

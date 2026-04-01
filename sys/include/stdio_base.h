@@ -7,11 +7,10 @@
  * directory for more details.
  */
 
+#pragma once
+
 /**
- * @defgroup    sys_stdio STDIO abstraction
- * @ingroup     sys
- *
- * @brief       Simple standard input/output (STDIO) abstraction for RIOT
+ * @addtogroup  sys_stdio STDIO abstraction
  *
  * @{
  * @file
@@ -20,9 +19,6 @@
  * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
  * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
  */
-
-#ifndef STDIO_BASE_H
-#define STDIO_BASE_H
 
 #include <unistd.h>
 
@@ -53,7 +49,7 @@ enum {
     STDIO_UDP,                  /**< stdio via UDP */
     STDIO_TELNET,               /**< stdio via telnet */
     STDIO_ETHOS,                /**< stdio via ethos (mutiplex) */
-    STDIO_SLIP,                 /*<< stdio via SLIP (mutiplex) */
+    STDIO_SLIP,                 /**< stdio via SLIP (mutiplex) */
 };
 
 /**
@@ -101,6 +97,15 @@ void stdio_init(void);
  */
 int stdio_available(void);
 #endif
+
+/**
+ * @brief   Clear the input buffer
+ *
+ * @note    Requires 'USEMODULE += stdin'
+ *
+ * @warning This function does only work if the stdio implementation supports it.
+ */
+void stdio_clear_stdin(void);
 
 /**
  * @brief read @p len bytes from stdio uart into @p buffer
@@ -171,4 +176,3 @@ void stdio_close(void);
 }
 #endif
 /** @} */
-#endif /* STDIO_BASE_H */

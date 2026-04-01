@@ -1,10 +1,7 @@
 /*
- * Copyright (C) 2016 Kaspar Schleiser <kaspar@schleiser.de>
- *               2018 Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
+ * SPDX-FileCopyrightText: 2016 Kaspar Schleiser <kaspar@schleiser.de>
+ * SPDX-FileCopyrightText: 2018 Freie Universität Berlin
+ * SPDX-License-Identifier: LGPL-2.1-only
  */
 
 /**
@@ -195,6 +192,16 @@ int main(void)
     event_post(&queue, (event_t *)&custom_event);
 
     event_timeout_t event_timeout;
+
+    /* uninitialied event_timeout_t should return false */
+    event_timeout_ztimer_init(&event_timeout, NULL, &queue, (event_t *)&event_callback);
+    expect(!event_timeout_is_pending(&event_timeout));
+
+    event_timeout_ztimer_init(&event_timeout, ZTIMER_USEC, NULL, (event_t *)&event_callback);
+    expect(!event_timeout_is_pending(&event_timeout));
+
+    event_timeout_ztimer_init(&event_timeout, ZTIMER_USEC, &queue, NULL);
+    expect(!event_timeout_is_pending(&event_timeout));
 
     puts("posting timed callback with timeout 1sec");
     event_timeout_init(&event_timeout, &queue, (event_t *)&event_callback);

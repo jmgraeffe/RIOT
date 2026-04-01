@@ -30,8 +30,17 @@ ifneq (8, $(firstword $(shell echo 8 $(GCC_VERSION) | tr ' ' '\n' | sort -n)))
   OPTIONAL_CFLAGS_BLACKLIST += -fmacro-prefix-map=$(RIOTBASE)/=
 endif
 
+# GCC does not warn about documentation (yet)
+OPTIONAL_CFLAGS_BLACKLIST += -Wdocumentation -Wno-error=documentation -Wno-documentation-deprecated-sync
+
 # We use GDB for debugging
 include $(RIOTMAKE)/tools/gdb.inc.mk
+
+# GCC's static analysis tools can be enabled using -fanalyzer
+CFLAGS_STATIC_ANALYSIS := -fanalyzer
+
+# this needs to be recursively evaluated
+RCFLAGS_WRITE_SARIF = -fdiagnostics-set-output=sarif:file='$$@.sarif'
 
 # Data address spaces starts at zero for all supported architectures. This fixes
 # compilation at least on MSP430 and AVR.

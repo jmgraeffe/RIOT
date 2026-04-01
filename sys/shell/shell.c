@@ -36,7 +36,6 @@
 #include <assert.h>
 #include <errno.h>
 
-#include "kernel_defines.h"
 #include "xfa.h"
 #include "shell.h"
 #include "shell_lock.h"
@@ -47,7 +46,7 @@
 #endif
 
 /* define shell command cross file array */
-XFA_INIT_CONST(shell_command_xfa_t*, shell_commands_xfa);
+XFA_INIT_CONST(shell_command_xfa_t, shell_commands_xfa_v2);
 
 #define ETX '\x03'  /** ASCII "End-of-Text", or Ctrl-C */
 #define EOT '\x04'  /** ASCII "End-of-Transmission", or Ctrl-D */
@@ -102,10 +101,10 @@ static shell_command_handler_t search_commands(const shell_command_t *entry,
 
 static shell_command_handler_t search_commands_xfa(char *command)
 {
-    unsigned n = XFA_LEN(shell_command_t*, shell_commands_xfa);
+    unsigned n = XFA_LEN(shell_command_t, shell_commands_xfa_v2);
 
     for (unsigned i = 0; i < n; i++) {
-        const volatile shell_command_xfa_t *entry = shell_commands_xfa[i];
+        const volatile shell_command_xfa_t *entry = &shell_commands_xfa_v2[i];
         if (flash_strcmp(command, entry->name) == 0) {
             return entry->handler;
         }
@@ -147,7 +146,7 @@ static void print_commands_json(const shell_command_t *cmd_list)
         }
     }
 
-    unsigned n = XFA_LEN(shell_command_xfa_t*, shell_commands_xfa);
+    unsigned n = XFA_LEN(shell_command_xfa_t, shell_commands_xfa_v2);
     for (unsigned i = 0; i < n; i++) {
         if (first) {
             first = false;
@@ -155,7 +154,7 @@ static void print_commands_json(const shell_command_t *cmd_list)
         else {
             printf(", ");
         }
-        const volatile shell_command_xfa_t *entry = shell_commands_xfa[i];
+        const volatile shell_command_xfa_t *entry = &shell_commands_xfa_v2[i];
         printf("{\"cmd\": \"%s\", \"desc\": \"%s\"}", entry->name, entry->desc);
     }
     puts("]}");
@@ -170,9 +169,9 @@ static void print_commands(const shell_command_t *entry)
 
 static void print_commands_xfa(void)
 {
-    unsigned n = XFA_LEN(shell_command_xfa_t*, shell_commands_xfa);
+    unsigned n = XFA_LEN(shell_command_xfa_t, shell_commands_xfa_v2);
     for (unsigned i = 0; i < n; i++) {
-        const volatile shell_command_xfa_t *entry = shell_commands_xfa[i];
+        const volatile shell_command_xfa_t *entry = &shell_commands_xfa_v2[i];
         printf("%-20" PRIsflash " %" PRIsflash "\n",
                      entry->name, entry->desc);
     }
@@ -440,30 +439,7 @@ static inline void new_line(void)
     }
 }
 
-/**
- * @brief   Read a single line from standard input into a buffer.
- *
- * In addition to copying characters, this routine echoes the line back to
- * stdout and also supports primitive line editing.
- *
- * If the input line is too long, the input will still be consumed until the end
- * to prevent the next line from containing garbage.
- *
- * We allow Unix (\n), DOS (\r\n), and Mac linebreaks (\r).
- * QEMU transmits only a single '\r' == 13 on hitting enter ("-serial stdio").
- * DOS newlines are handled like hitting enter twice.
- *
- * @param   buf     Buffer where the input will be placed.
- * @param   size    Size of the buffer. The maximum line length will be one less
- *                  than size, to accommodate for the null terminator.
- *                  The minimum buffer size is 1.
- *
- * @return  length of the read line, excluding the terminator, if reading was
- *          successful.
- * @return  EOF, if the end of the input stream was reached.
- * @return  -ENOBUFS if the buffer size was exceeded.
- */
-int readline(char *buf, size_t size) /* needed externally by module shell_lock */
+int shell_readline(char *buf, size_t size)
 {
     int curr_pos = 0;
     bool length_exceeded = false;
@@ -537,7 +513,7 @@ void shell_run_once(const shell_command_t *shell_commands,
     print_prompt();
 
     while (1) {
-        int res = readline(line_buf, len);
+        int res = shell_readline(line_buf, len);
 
         if (IS_USED(MODULE_SHELL_LOCK)) {
             if (shell_lock_is_locked()) {

@@ -6,6 +6,8 @@
  * details.
  */
 
+#pragma once
+
 /**
  * @defgroup    sys_color Color
  * @ingroup     sys
@@ -20,9 +22,6 @@
  * @author      Simon Brummer <brummer.simon@googlemail.com>
  */
 
-#ifndef COLOR_H
-#define COLOR_H
-
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -30,13 +29,24 @@ extern "C" {
 #endif
 
 /**
- * @brief Data-structure describing a RGB color
+ * @brief Data-structure describing an RGB color
  */
 typedef struct {
     uint8_t r;          /**< red value      [0 - 255] */
     uint8_t g;          /**< green value    [0 - 255] */
     uint8_t b;          /**< blue value     [0 - 255] */
 } color_rgb_t;
+
+/**
+ * @brief Data-structure describing an RGBW color
+ */
+typedef struct {
+    uint8_t r;          /**< red value      [0 - 255] */
+    uint8_t g;          /**< green value    [0 - 255] */
+    uint8_t b;          /**< blue value     [0 - 255] */
+    uint8_t w;          /**< white value    [0 - 255] */
+} color_rgbw_t;
+
 
 /**
  * @brief RGBA color value
@@ -183,5 +193,4 @@ void color_rgb_complementary(const color_rgb_t *rgb, color_rgb_t *comp_rgb);
 }
 #endif
 
-#endif /* COLOR_H */
 /** @} */

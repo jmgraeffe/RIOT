@@ -85,7 +85,7 @@ class Board(object):
         def _reset_native_execute(obj, application, env=None, *args, **kwargs):
             pass
 
-        if (name in ['native', 'native64']) and (reset is None):
+        if (name in ['native', 'native32', 'native64']) and (reset is None):
             reset = _reset_native_execute
 
         self.name = name
@@ -239,8 +239,8 @@ def test_udpv6_send(board_group, application, env=None):
         receiver.sendline(u"udp server start %d" % port)
         # wait for neighbor discovery to be done
         time.sleep(5)
-        sender.sendline(u"udp send [%s]:%d ab:cd:ef" % (receiver_ip, port))
-        sender.expect_exact("Success: send 3 byte over UDP to [{}]:{}"
+        sender.sendline(u"udp send -b [%s]:%d abcdef" % (receiver_ip, port))
+        sender.expect_exact("Success: sent 3 byte over UDP to [{}]:{}"
                             .format(receiver_ip, port))
         receiver.expect(u"00000000  AB  CD  EF")
 
@@ -395,8 +395,8 @@ def test_triple_send(board_group, application, env=None):
         receiver.sendline(u"tcp server start %d" % tcp_port)
         # wait for neighbor discovery to be done
         time.sleep(5)
-        sender.sendline(u"udp send [%s]:%d 01:23" % (receiver_ip, udp_port))
-        sender.expect_exact(u"Success: send 2 byte over UDP to [%s]:%d" %
+        sender.sendline(u"udp send -b [%s]:%d 0123" % (receiver_ip, udp_port))
+        sender.expect_exact(u"Success: sent 2 byte over UDP to [%s]:%d" %
                             (receiver_ip, udp_port))
         receiver.expect(u"00000000  01  23")
 
@@ -413,7 +413,7 @@ def test_triple_send(board_group, application, env=None):
 
 if __name__ == "__main__":
     board = os.environ.get('BOARD', 'native')
-    if board not in ['native', 'native64']:
+    if board not in ['native', 'native32', 'native64']:
         print('\x1b[1;31mThis test requires a native board.\x1b[0m\n',
               file=sys.stderr)
         sys.exit(1)

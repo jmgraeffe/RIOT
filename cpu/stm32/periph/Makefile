@@ -2,7 +2,7 @@ MODULE = periph
 
 # Select the specific implementation for `periph_i2c`
 ifneq (,$(filter periph_i2c,$(USEMODULE)))
-  ifneq (,$(filter $(CPU_FAM),f0 f3 f7 g0 g4 l0 l4 l5 u5 wb wl c0))
+  ifneq (,$(filter $(CPU_FAM),f0 f3 f7 g0 g4 h7 l0 l4 l5 u5 wb wl c0))
     SRC += i2c_1.c
   else ifneq (,$(filter $(CPU_FAM),f1 f2 f4 l1))
     SRC += i2c_2.c
@@ -13,7 +13,9 @@ endif
 
 # Select the specific implementation for `periph_adc`
 ifneq (,$(filter periph_adc,$(USEMODULE)))
-  ifneq (,$(filter $(CPU_FAM),f4 f7))
+  ifneq (,$(filter $(CPU_FAM),f3 h7))
+    SRC += adc_f3_h7.c
+  else ifneq (,$(filter $(CPU_FAM),f4 f7))
     SRC += adc_f4_f7.c
   else ifneq (,$(filter $(CPU_FAM),f0 g0 c0))
     SRC += adc_f0_g0_c0.c
@@ -67,6 +69,14 @@ endif
 ifneq (,$(filter periph_wdt,$(USEMODULE)))
   $(warning Attention! WDT is clocked by CLOCK_LSI, it needs manual measuring\
     since values can deviate up to 50% from reference)
+endif
+
+ifneq (,$(filter periph_can,$(FEATURES_USED)))
+  ifneq (,$(filter g4,$(CPU_FAM)))
+	SRC += fdcan.c
+  else
+	SRC += classiccan.c
+  endif
 endif
 
 include $(RIOTMAKE)/periph.mk

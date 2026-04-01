@@ -6,6 +6,8 @@
  * directory for more details.
  */
 
+#pragma once
+
 /**
  * @ingroup     drivers_ws281x
  *
@@ -16,9 +18,6 @@
  * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
  */
 
-#ifndef WS281X_BACKEND_H
-#define WS281X_BACKEND_H
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -28,7 +27,7 @@ extern "C" {
  * @{
  */
 #ifdef MODULE_WS281X_ATMEGA
-#define WS281X_HAVE_INIT                    (1)
+#  define WS281X_HAVE_INIT                  (1)
 #endif
 /** @} */
 
@@ -37,7 +36,7 @@ extern "C" {
  * @{
  */
 #ifdef MODULE_WS281X_ESP32
-#define WS281X_HAVE_INIT                    (1)
+#  define WS281X_HAVE_INIT                  (1)
 #endif
 /** @} */
 
@@ -46,8 +45,8 @@ extern "C" {
  * @{
  */
 #ifdef MODULE_WS281X_VT100
-#define WS281X_HAVE_PREPARE_TRANSMISSION    (1)
-#define WS281X_HAVE_END_TRANSMISSION        (1)
+#  define WS281X_HAVE_PREPARE_TRANSMISSION  (1)
+#  define WS281X_HAVE_END_TRANSMISSION      (1)
 #endif
 /** @} */
 
@@ -56,7 +55,18 @@ extern "C" {
  * @{
  */
 #ifdef MODULE_WS281X_TIMER_GPIO_LL
-#define WS281X_HAVE_INIT                    (1)
+#  define WS281X_HAVE_INIT                  (1)
+#endif
+/** @} */
+
+/**
+ * @name    Properties of the SPI backend.
+ * @{
+ */
+#ifdef MODULE_WS281X_SPI
+#  define WS281X_HAVE_INIT                  (1)
+#  define WS281X_HAVE_PREPARE_TRANSMISSION  (1)
+#  define WS281X_HAVE_END_TRANSMISSION      (1)
 #endif
 /** @} */
 
@@ -64,5 +74,4 @@ extern "C" {
 }
 #endif
 
-#endif /* WS281X_BACKEND_H */
 /** @} */

@@ -6,6 +6,8 @@
  * directory for more details.
  */
 
+#pragma once
+
 /**
  * @defgroup    net_gnrc_ipv6_nib   Neighbor Information Base for IPv6
  * @ingroup     net_gnrc_ipv6
@@ -22,8 +24,6 @@
  *
  * @author  Martine Lenders <m.lenders@fu-berlin.de>
  */
-#ifndef NET_GNRC_IPV6_NIB_H
-#define NET_GNRC_IPV6_NIB_H
 
 #include "net/gnrc/ipv6/nib/abr.h"
 #include "net/gnrc/ipv6/nib/ft.h"
@@ -334,6 +334,20 @@ void gnrc_ipv6_nib_iface_up(gnrc_netif_t *netif);
 void gnrc_ipv6_nib_iface_down(gnrc_netif_t *netif, bool send_final_ra);
 
 /**
+ * @brief   Start sending periodic router solicitations on an interface
+ *
+ * @param[in] netif     The interface to send the solicitations on
+ */
+void gnrc_ipv6_nib_start_search_rtr(gnrc_netif_t *netif);
+
+/**
+ * @brief   Stop sending periodic router solicitations on an interface
+ *
+ * @param[in] netif     The interface to cease sending solicitations
+ */
+void gnrc_ipv6_nib_stop_search_rtr(gnrc_netif_t *netif);
+
+/**
  * @brief   Gets link-layer address of next hop to a destination address
  *
  * @pre `(dst != NULL) && (nce != NULL)`
@@ -429,9 +443,21 @@ void gnrc_ipv6_nib_change_rtr_adv_iface(gnrc_netif_t *netif, bool enable);
     (void)netif; (void)enable
 #endif
 
+/**
+ * This function is implemented by the application, it assigns a link-local
+ * address to a specific network interface.
+ *
+ * To use this feature, enable the `gnrc_ipv6_nib_dyn_lladdr` module.
+ *
+ * @param[in] netif     Interface that the address would be added to
+ * @param[out] lladdr   Address to add to the interface (if function returns true)
+ *
+ * @returns true if a @p lladdr should be added to @p netif
+ */
+bool gnrc_ipv6_nib_dyn_lladdr_get(gnrc_netif_t *netif, ipv6_addr_t *lladdr);
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* NET_GNRC_IPV6_NIB_H */
 /** @} */

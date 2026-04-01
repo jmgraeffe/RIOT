@@ -1,9 +1,6 @@
 /*
- * Copyright (C) 2023 Gunar Schorcht <gunar@schorcht.net>
- *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License v2.1. See the file LICENSE in the top level directory for more
- * details.
+ * SPDX-FileCopyrightText: 2023 Gunar Schorcht <gunar@schorcht.net>
+ * SPDX-License-Identifier: LGPL-2.1-only
  */
 
 /**
@@ -28,8 +25,9 @@
 #include "debug.h"
 
 #ifdef MODULE_FMT
-#include "fmt.h"
+#  include "fmt.h"
 #else
+#  include <stdio.h>
 static inline void print_str(const char *str)
 {
     fputs(str, stdout);

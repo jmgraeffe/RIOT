@@ -1,9 +1,6 @@
 /*
- * Copyright (C) 2022 HAW Hamburg
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
+ * SPDX-FileCopyrightText: 2022 HAW Hamburg
+ * SPDX-License-Identifier: LGPL-2.1-only
  */
 
 /**
@@ -11,7 +8,7 @@
  * @{
  *
  * @brief       Tests the PSA cipher configurations
- *              Contents have been copied from `examples/psa_crypto`
+ *              Contents have been copied from `examples/advanced/psa_crypto`
  *
  * @author      Mikolai Gütschow <mikolai.guetschow@tu-dresden.de>
  * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
@@ -32,6 +29,8 @@ static const uint8_t KEY_128[] = {
     0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c
 };
 
+/* certain PSA backends require the data to be in RAM rather than ROM
+ * so these values cannot be `const` */
 static uint8_t PLAINTEXT[] = {
     0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96,
     0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a,

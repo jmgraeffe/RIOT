@@ -1,9 +1,6 @@
 /*
- * Copyright (C) 2019 ML!PA Consulting GmbH
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
+ * SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
+ * SPDX-License-Identifier: LGPL-2.1-only
  */
 
 #include <stdint.h>
@@ -30,6 +27,41 @@ static void test_libc_strscpy(void)
     TEST_ASSERT_EQUAL_INT(strscpy(buffer, "empty", 0), -E2BIG);
 }
 
+static void test_libc_swprintf(void)
+{
+    string_writer_t sw;
+    char buffer[32];
+    int res;
+
+    string_writer_init(&sw, buffer, sizeof(buffer));
+
+    /* check that string can be written completely */
+    res = swprintf(&sw, "Hello World!");
+    TEST_ASSERT_EQUAL_INT(res, 12);
+    TEST_ASSERT_EQUAL_INT(string_writer_len(&sw), 12);
+    TEST_ASSERT_EQUAL_INT(strcmp("Hello World!", string_writer_str(&sw)), 0);
+
+    /* check that we can add to the string */
+    /* Writing 10 characters, returns 10 bytes written */
+    res = swprintf(&sw, "0123456789");
+    TEST_ASSERT_EQUAL_INT(res, 10);
+    TEST_ASSERT_EQUAL_INT(strcmp("Hello World!0123456789", string_writer_str(&sw)), 0);
+
+    /* The string does not fit completely into the buffer, so it gets truncated */
+    res = swprintf(&sw, "01234567891");
+    TEST_ASSERT_EQUAL_INT(res, -E2BIG);
+    TEST_ASSERT_EQUAL_INT(strcmp("Hello World!0123456789012345678", string_writer_str(&sw)), 0);
+
+    /* You can't write to a full buffer */
+    res = swprintf(&sw, "###");
+    TEST_ASSERT_EQUAL_INT(res, -E2BIG);
+
+    /* check if string was truncated as expected */
+    TEST_ASSERT_EQUAL_INT(string_writer_len(&sw), 32);
+    TEST_ASSERT_EQUAL_INT(strcmp("Hello World!0123456789012345678",
+                                 string_writer_str(&sw)), 0);
+}
+
 static void test_libc_memchk(void)
 {
     char buffer[32];
@@ -38,6 +70,22 @@ static void test_libc_memchk(void)
 
     buffer[5] = 5;
     TEST_ASSERT(memchk(buffer, 0xff, sizeof(buffer)) == &buffer[5]);
+}
+
+static void test_libc_reverse_buf3(void)
+{
+    const char expected[3] = { 3, 2, 1 };
+    char buffer[3] = { 1, 2, 3 };
+    reverse_buf(buffer, sizeof(buffer));
+    TEST_ASSERT(!memcmp(buffer, expected, sizeof(buffer)));
+}
+
+static void test_libc_reverse_buf4(void)
+{
+    const char expected[4] = { 4, 3, 2, 1 };
+    char buffer[4] = { 1, 2, 3, 4 };
+    reverse_buf(buffer, sizeof(buffer));
+    TEST_ASSERT(!memcmp(buffer, expected, sizeof(buffer)));
 }
 
 /**
@@ -97,12 +145,43 @@ static void test_libc_endian(void)
 }
 /** @} */
 
+static void test_libc_memxor(void)
+{
+    uint8_t src[] = { 0xf0, 0x0f, 0x00, 0xff, 0xff };
+    uint8_t dst[] = { 0x0f, 0xf0, 0xff, 0x00, 0xff };
+    const uint8_t exp[] = { 0xff, 0xff, 0xff, 0xff, 0x00 };
+    memxor(dst, src, sizeof(src));
+    TEST_ASSERT(!memcmp(dst, exp, sizeof(exp)));
+
+    uint8_t dst_overlap_forward[] = { 0x0f, 0xf0, 0x0f, 0xf0, 0x0f, 0x0f };
+    memxor(dst_overlap_forward, dst_overlap_forward + 1, sizeof(exp));
+    TEST_ASSERT(!memcmp(dst_overlap_forward, exp, sizeof(exp)));
+
+    uint8_t dst_overlap_backward[] = { 0x0f, 0xf0, 0x0f, 0xf0, 0x0f, 0x0f };
+    memxor(dst_overlap_backward + 1, dst_overlap_backward, sizeof(exp));
+    TEST_ASSERT(!memcmp(dst_overlap_backward + 1, exp, sizeof(exp)));
+}
+
+static void test_libc_memcpy_reversed(void)
+{
+    uint8_t src[] = { 0x01, 0x02, 0x03, 0x04, 0x05 };
+    uint8_t dst[sizeof(src)];
+    const uint8_t exp[] = { 0x05, 0x04, 0x03, 0x02, 0x01 };
+    memcpy_reversed(dst, src, sizeof(src));
+    TEST_ASSERT(!memcmp(dst, exp, sizeof(exp)));
+}
+
 Test *tests_libc_tests(void)
 {
     EMB_UNIT_TESTFIXTURES(fixtures) {
         new_TestFixture(test_libc_strscpy),
+        new_TestFixture(test_libc_swprintf),
         new_TestFixture(test_libc_memchk),
+        new_TestFixture(test_libc_reverse_buf3),
+        new_TestFixture(test_libc_reverse_buf4),
         new_TestFixture(test_libc_endian),
+        new_TestFixture(test_libc_memxor),
+        new_TestFixture(test_libc_memcpy_reversed),
     };
 
     EMB_UNIT_TESTCALLER(libc_tests, NULL, NULL, fixtures);

@@ -37,6 +37,7 @@
 #include "netif/lowpan6.h"
 #include "thread.h"
 #include "thread_flags.h"
+#include "tiny_strerror.h"
 #include "utlist.h"
 
 #define ENABLE_DEBUG                0
@@ -82,7 +83,7 @@ static void _isr(event_t *ev);
 bool is_netdev_legacy_api(netdev_t *netdev)
 {
     static_assert(IS_USED(MODULE_NETDEV_NEW_API) || IS_USED(MODULE_NETDEV_LEGACY_API),
-                  "used netdev misses dependency to netdev_legacy_api");
+                  "used netdev misses dependency to netdev_legacy_api or netdev_new_api");
     if (!IS_USED(MODULE_NETDEV_NEW_API)) {
         return true;
     }
@@ -275,11 +276,11 @@ static err_t _common_link_output(struct netif *netif, netdev_t *netdev, iolist_t
 {
     lwip_netif_dev_acquire(netif);
 
-    err_t res;
+    int res;
     if (is_netdev_legacy_api(netdev)) {
-        res = (netdev->driver->send(netdev, iolist) > 0) ? ERR_OK : ERR_BUF;
+        res = netdev->driver->send(netdev, iolist);
         lwip_netif_dev_release(netif);
-        return res;
+        return res > 0 ? ERR_OK : ERR_BUF;
     }
 
     unsigned irq_state;
@@ -295,17 +296,20 @@ static err_t _common_link_output(struct netif *netif, netdev_t *netdev, iolist_t
         irq_state = irq_disable();
         compat_netif->thread_doing_tx = NULL;
         irq_restore(irq_state);
+        DEBUG("[lwip_netdev] send() returned %s\n", tiny_strerror(res));
         return ERR_IF;
     }
 
-    /* block until TX completion is signaled from IRQ */
-    thread_flags_wait_any(THREAD_FLAG_LWIP_TX_DONE);
-
-    irq_state = irq_disable();
-    compat_netif->thread_doing_tx = NULL;
-    irq_restore(irq_state);
-
+    /* `res > 0` means transmission already completed according to API contract.
+     * ==> only waiting when res == 0 */
     if (res == 0) {
+        /* block until TX completion is signaled from IRQ */
+        thread_flags_wait_any(THREAD_FLAG_LWIP_TX_DONE);
+
+        irq_state = irq_disable();
+        compat_netif->thread_doing_tx = NULL;
+        irq_restore(irq_state);
+
         /* async send */
         while (-EAGAIN == (res = netdev->driver->confirm_send(netdev, NULL))) {
             /* this should not happen, as the driver really only should emit the
@@ -318,6 +322,7 @@ static err_t _common_link_output(struct netif *netif, netdev_t *netdev, iolist_t
     lwip_netif_dev_release(netif);
 
     if (res < 0) {
+        DEBUG("[lwip_netdev] confirm_send() returned %s\n", tiny_strerror(res));
         return ERR_IF;
     }
 
@@ -327,9 +332,9 @@ static err_t _common_link_output(struct netif *netif, netdev_t *netdev, iolist_t
 static err_t _common_link_output(struct netif *netif, netdev_t *netdev, iolist_t *iolist)
 {
     lwip_netif_dev_acquire(netif);
-    err_t res = (netdev->driver->send(netdev, iolist) > 0) ? ERR_OK : ERR_BUF;
+    int res = netdev->driver->send(netdev, iolist);
     lwip_netif_dev_release(netif);
-    return res;
+    return res > 0 ? ERR_OK : ERR_BUF;
 }
 #endif
 

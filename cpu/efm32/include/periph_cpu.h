@@ -1,10 +1,9 @@
 /*
- * Copyright (C) 2015-2017 Freie Universität Berlin
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
+ * SPDX-FileCopyrightText: 2015-2017 Freie Universität Berlin
+ * SPDX-License-Identifier: LGPL-2.1-only
  */
+
+#pragma once
 
 /**
  * @ingroup     cpu_efm32
@@ -17,12 +16,10 @@
  * @author      Bas Stottelaar <basstottelaar@gmail.com>
  */
 
-#ifndef PERIPH_CPU_H
-#define PERIPH_CPU_H
-
 #include "kernel_defines.h"
 #include "mutex.h"
 
+#include "config.h"
 #include "cpu.h"
 #include "cpu_conf.h"
 
@@ -63,7 +60,6 @@ typedef struct {
     CMU_Clock_TypeDef clk;   /**< Clock domain */
     CMU_ClkDiv_TypeDef div;  /**< Divisor */
 } clk_div_t;
-
 
 /**
  * @brief   Length of CPU ID in octets.
@@ -430,15 +426,16 @@ typedef enum {
  * @brief   I2C device configuration.
  */
 typedef struct {
-    I2C_TypeDef *dev;       /**< USART device used */
-    gpio_t sda_pin;         /**< pin used for SDA */
-    gpio_t scl_pin;         /**< pin used for SCL */
+    I2C_TypeDef *dev;           /**< I2C device used */
+    gpio_t sda_pin;             /**< pin used for SDA */
+    gpio_t scl_pin;             /**< pin used for SCL */
 #if defined(_SILICON_LABS_32B_SERIES_0) || defined(_SILICON_LABS_32B_SERIES_1)
-    uint32_t loc;           /**< location of I2C pins */
+    uint32_t loc;               /**< location of I2C pins */
 #endif
-    CMU_Clock_TypeDef cmu;  /**< the device CMU channel */
-    IRQn_Type irq;          /**< the devices base IRQ channel */
-    uint32_t speed;         /**< the bus speed */
+    uint32_t speed;             /**< the bus speed */
+    CMU_Clock_TypeDef cmu;      /**< the device CMU channel */
+    IRQn_Type irq;              /**< the devices base IRQ channel */
+    bool use_internal_pull_ups; /**< enable internal pull-ups on SDA and SCL pins */
 } i2c_conf_t;
 
 /**
@@ -456,9 +453,9 @@ typedef struct {
  */
 #define HAVE_PWM_MODE_T
 typedef enum {
-    PWM_LEFT = timerModeUp,           /*< use left aligned PWM */
-    PWM_RIGHT = timerModeDown,        /*< use right aligned PWM */
-    PWM_CENTER = timerModeUp          /*< not supported, use left aligned */
+    PWM_LEFT = timerModeUp,           /**< use left aligned PWM */
+    PWM_RIGHT = timerModeDown,        /**< use right aligned PWM */
+    PWM_CENTER = timerModeUp          /**< not supported, use left aligned */
 } pwm_mode_t;
 /** @} */
 #endif /* ndef DOXYGEN */
@@ -568,13 +565,6 @@ typedef struct {
 #define LETIMER_MAX_VALUE _LETIMER_TOP_MASK  /**< max timer value of LETIMER peripheral */
 #define TIMER_MAX_VALUE _TIMER_TOP_MASK      /**< max timer value of TIMER peripheral */
 /** @} */
-
-/**
- * @brief   Use LETIMER as the base timer for XTIMER
- */
-#ifndef CONFIG_EFM32_XTIMER_USE_LETIMER
-#define CONFIG_EFM32_XTIMER_USE_LETIMER   0
-#endif
 
 /**
  * @brief   UART device configuration.
@@ -745,5 +735,4 @@ typedef enum {
 }
 #endif
 
-#endif /* PERIPH_CPU_H */
 /** @} */

@@ -1,5 +1,5 @@
 ifeq (, $(__RIOTBUILD_FLAG))
-  $(error You cannot build a module on its own. Use "make" in your application's directory instead.)
+  $(error You cannot build a module on its own. Use "make" in your application directory instead.)
 endif
 
 #
@@ -78,6 +78,19 @@ ifneq (,$(SRCXX))
   endif
 endif
 
+# If static analysis is enabled *and* the module claims to compile fine with it,
+# add the corresponding flags
+ifeq (1,$(STATIC_ANALYSIS))
+  ifeq (1,$(MODULE_SUPPORTS_STATIC_ANALYSIS))
+    CFLAGS := $(CFLAGS_STATIC_ANALYSIS) $(CFLAGS)
+  endif
+endif
+
+WRITE_SARIF ?= 0
+ifeq (1,$(WRITE_SARIF))
+  RCFLAGS += $(RCFLAGS_WRITE_SARIF)
+endif
+
 compile-commands: | $(DIRS:%=COMPILE-COMMANDS--%)
 	$(file >$(BINDIR)/$(MODULE)/compile_cmds.txt,SRC: $(sort $(SRC) $(SRC_NO_LTO)))
 	$(file >>$(BINDIR)/$(MODULE)/compile_cmds.txt,SRC_NO_LTO: $(sort $(SRC_NO_LTO)))
@@ -112,7 +125,7 @@ ifneq (,$(SUBDIRS_IN_DIRS))
     $(patsubst $(CURDIR)/%,./%, $(SUBDIRS_IN_DIRS)). \
     Please select a single approach for each subfolder to prevent linking errors.)
 endif
-SUBDIRS := $(filter-out $(BINDIR)/$(MODULE)/, $(dir $(OBJ)))
+SUBDIRS := $(sort $(filter-out $(BINDIR)/$(MODULE)/, $(dir $(OBJ))))
 
 include $(RIOTMAKE)/blob.inc.mk
 include $(RIOTMAKE)/tools/fixdep.inc.mk
@@ -147,9 +160,7 @@ OBJ_DEPS += $(RIOTBUILD_CONFIG_HEADER_C)
 
 $(OBJC): $(BINDIR)/$(MODULE)/%.o: %.c $(OBJ_DEPS) | $(if $(SHOULD_RUN_KCONFIG),$(KCONFIG_GENERATED_AUTOCONF_HEADER_C))
 	$(Q)$(CCACHE) $(CC) \
-		-DRIOT_FILE_RELATIVE=\"$(patsubst $(RIOTBASE)/%,%,$(abspath $<))\" \
-		-DRIOT_FILE_NOPATH=\"$(notdir $<)\" \
-		$(CFLAGS) $(INCLUDES) -MQ '$@' -MD -MP -c -o $@ $(abspath $<)
+		$(CFLAGS) $(RCFLAGS) $(INCLUDES) -MQ '$@' -MD -MP -c -o $@ $(abspath $<)
 ifneq (,$(SHOULD_RUN_KCONFIG))
 	$(Q)$(FIXDEP) $(@:.o=.d) $@ $(KCONFIG_SYNC_DIR) > $(@:.o=.tmp)
 	$(Q)mv $(@:.o=.tmp) $(@:.o=.d)
@@ -157,9 +168,7 @@ endif
 
 $(GENOBJC): %.o: %.c $(OBJ_DEPS) | $(if $(SHOULD_RUN_KCONFIG),$(KCONFIG_GENERATED_AUTOCONF_HEADER_C))
 	$(Q) $(CCACHE) $(CC) \
-		-DRIOT_FILE_RELATIVE=\"$(patsubst $(RIOTBASE)/%,%,$<)\" \
-		-DRIOT_FILE_NOPATH=\"$(notdir $<)\" \
-		$(CFLAGS) $(INCLUDES) -MQ '$@' -MD -MP -c -o $@ $<
+		$(CFLAGS) $(RCFLAGS) $(INCLUDES) -MQ '$@' -MD -MP -c -o $@ $<
 ifneq (,$(SHOULD_RUN_KCONFIG))
 	$(Q)$(FIXDEP) $(@:.o=.d) $@ $(KCONFIG_SYNC_DIR) > $(@:.o=.tmp)
 	$(Q)mv $(@:.o=.tmp) $(@:.o=.d)
@@ -167,9 +176,7 @@ endif
 
 $(OBJCXX): $(BINDIR)/$(MODULE)/%.o: %.$(SRCXXEXT) $(OBJ_DEPS) | $(if $(SHOULD_RUN_KCONFIG),$(KCONFIG_GENERATED_AUTOCONF_HEADER_C))
 	$(Q)$(CCACHE) $(CXX) \
-		-DRIOT_FILE_RELATIVE=\"$(patsubst $(RIOTBASE)/%,%,$(abspath $<))\" \
-		-DRIOT_FILE_NOPATH=\"$(notdir $<)\" \
-		$(CXXFLAGS) $(CXXINCLUDES) $(INCLUDES) -MQ '$@' -MD -MP -c -o $@ $(abspath $<)
+		$(CXXFLAGS) $(RCFLAGS) $(CXXINCLUDES) $(INCLUDES) -MQ '$@' -MD -MP -c -o $@ $(abspath $<)
 ifneq (,$(SHOULD_RUN_KCONFIG))
 	$(Q)$(FIXDEP) $(@:.o=.d) $@ $(KCONFIG_SYNC_DIR) > $(@:.o=.tmp)
 	$(Q)mv $(@:.o=.tmp) $(@:.o=.d)

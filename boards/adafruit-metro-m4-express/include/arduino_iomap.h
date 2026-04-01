@@ -1,10 +1,9 @@
 /*
- * Copyright (C) 2024 ML!PA Consulting GmbH
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
+ * SPDX-FileCopyrightText: 2024 ML!PA Consulting GmbH
+ * SPDX-License-Identifier: LGPL-2.1-only
  */
+
+#pragma once
 
 /**
  * @ingroup     boards_adafruit-metro-m4-express
@@ -15,9 +14,6 @@
  *
  * @author      Marian Buschsieweke <marian.buschsieweke@posteo.net>
  */
-
-#ifndef ARDUINO_IOMAP_H
-#define ARDUINO_IOMAP_H
 
 #include "periph/gpio.h"
 #include "periph/adc.h"
@@ -106,13 +102,30 @@ extern "C" {
  * SPI bus.
  */
 #if !MODULE_PERIPH_UART
-#  define ARDUINO_SPI_D11D12D13   SPI_DEV(1)
+#  define ARDUINO_SPI_D11D12D13 SPI_DEV(1)
 #endif
+/** @} */
+
+/**
+ * @name    Arduino's UART devices
+ * @{
+ */
+#define ARDUINO_UART_D0D1       UART_DEV(0)
+/** @} */
+
+/**
+ * @name    Arduino's I2C buses
+ * @{
+ */
+/**
+ * @brief   The first I2C bus is where shields for the Arduino UNO/Mega expect
+ *          it
+ */
+#define ARDUINO_I2C_UNO         I2C_DEV(0)
 /** @} */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* ARDUINO_IOMAP_H */
 /** @} */

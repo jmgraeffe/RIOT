@@ -6,6 +6,8 @@
  * directory for more details.
  */
 
+#pragma once
+
 /**
  * @ingroup     sys_event
  * @brief       Provides functionality to trigger periodic event callbacks
@@ -21,9 +23,6 @@
  * @author      Benjamin Valentin <benjamin.valentin@ml-pa.com>
  *
  */
-
-#ifndef EVENT_PERIODIC_CALLBACK_H
-#define EVENT_PERIODIC_CALLBACK_H
 
 #include <assert.h>
 #include "event/callback.h"
@@ -84,8 +83,8 @@ static inline void event_periodic_callback_init(event_periodic_callback_t *event
  * This will make the event as configured in @p event be triggered
  * at every interval ticks (based on event->periodic.clock).
  *
- * @note: the used event_periodic struct must stay valid until after the timeout
- *        event has been processed!
+ * @note: @p event must stay valid until after all periodic timeout
+ *        events have been processed!
  *
  * @note: this function does not touch the current count value.
  *
@@ -100,10 +99,39 @@ static inline void event_periodic_callback_start(event_periodic_callback_t *even
 }
 
 /**
+ * @brief   Starts a periodic callback event without delay for the first occurrence
+ *
+ * If the event is already started, it's interval will be updated and it
+ * will be scheduled immediately.
+ *
+ * This will make the event as configured in @p event be triggered
+ * at every interval ticks (based on event->periodic.clock).
+ *
+ * @note: @p event must stay valid until after all periodic timeout
+ *        events have been processed!
+ *
+ * @note: this function does not touch the current count value.
+ *
+ * @note: the periodic event will start without initial delay.
+ *
+ * @param[in]   event           event_periodic_callback context object to use
+ * @param[in]   interval        period length for the event
+ */
+static inline void event_periodic_callback_start_now(event_periodic_callback_t *event,
+                                                     uint32_t interval)
+{
+    assert(event->event.callback);
+    event_periodic_start_now(&event->periodic, interval);
+}
+
+/**
  * @brief   Initialize and start a periodic callback event
  *
  * This is a convenience function that combines @ref event_periodic_callback_init
  * and @ref event_periodic_callback_start
+ *
+ * @note: The periodic callback event is configured to run forever, and the first
+ *        occurrence happens after the delay given by @p timeout .
  *
  * @param[out]  event           event_periodic_callback object to initialize
  * @param[in]   clock           the clock to configure this timer on
@@ -180,5 +208,4 @@ static inline void event_periodic_callback_stop(event_periodic_callback_t *event
 #ifdef __cplusplus
 }
 #endif
-#endif /* EVENT_PERIODIC_CALLBACK_H */
 /** @} */

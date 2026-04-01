@@ -28,17 +28,18 @@ USEMODULE += sock_udp
 USEMODULE += sock_util
 USEMODULE += shell
 USEMODULE += shell_cmds_default
+USEMODULE += shell_cmd_udp_server
 USEMODULE += ps
 USEMODULE += od
 USEMODULE += netdev_default
 USEMODULE += ztimer_usec
 
-ifneq (,$(filter native native64,$(BOARD)))
+ifneq (,$(filter native native32 native64,$(BOARD)))
   USEMODULE += lwip_ethernet
 endif
 
 # Test only implemented for native
-ifeq (,$(filter native native64,$(BOARD)))
+ifeq (,$(filter native native32 native64,$(BOARD)))
   TESTS=
 endif
 

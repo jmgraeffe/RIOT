@@ -6,6 +6,8 @@
  * directory for more details.
  */
 
+#pragma once
+
 /**
  * @ingroup     drivers_atwinc15x0
  * @{
@@ -16,11 +18,8 @@
  * @author      Gunar Schorcht <gunar@schorcht.net>
  */
 
-#ifndef ATWINC15X0_INTERNAL_H
-#define ATWINC15X0_INTERNAL_H
-
 #include <stdbool.h>
-#include <string.h>
+#include <string_utils.h>
 
 #include "driver/include/m2m_types.h"
 #include "atwinc15x0.h"
@@ -275,7 +274,7 @@ static inline bool _atwinc15x0_is_sleeping(const atwinc15x0_t *dev) {
 static inline void _atwinc15x0_sta_set_current_ssid(atwinc15x0_t *dev, const char *ssid) {
     (void)dev; (void)ssid;
 #if IS_USED(MODULE_ATWINC15X0_DYNAMIC_CONNECT)
-    strcpy(atwinc15x0->ssid, ssid);
+    strscpy(atwinc15x0->ssid, ssid, ARRAY_SIZE(atwinc15x0->ssid));
 #endif
 }
 
@@ -305,5 +304,4 @@ void atwinc15x0_irq(void);
 }
 #endif
 
-#endif /* ATWINC15X0_INTERNAL_H */
 /** @} */

@@ -1,9 +1,6 @@
 /*
- * Copyright (C) 2019 ML!PA Consulting GmbH
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
+ * SPDX-FileCopyrightText: 2019 ML!PA Consulting GmbH
+ * SPDX-License-Identifier: LGPL-2.1-only
  */
 
 /**
@@ -224,6 +221,39 @@ static void test_rtc_mktime(void)
     TEST_ASSERT_EQUAL_INT(98197931, rtc_mktime(&t));
 }
 
+static void test_mktime(void)
+{
+    /* second 1 of 1970 is defined 1 second of unixtime */
+    struct tm t  = {
+        .tm_sec  =  1,
+        .tm_min  =  0,
+        .tm_hour =  0,
+        .tm_mday =  1,
+        .tm_mon  =  0,
+        .tm_year = 70,
+        .tm_wday =   0,
+        .tm_yday =   1,
+    };
+    /* This test will fail if mktime is applying timezone information
+     * that is not 0 seconds offset from UTC (GMT) and therefore returning unixtime.
+     * A usual reason for failure might be that nativ is run in a local not "UTC" timezone,
+     * a "Fix" for this failure is setting the environment variable TZ to "UTC" */
+    TEST_ASSERT_EQUAL_INT(1, mktime(&t));
+
+    t  = (struct tm){
+        .tm_sec  =  11,
+        .tm_min  =  12,
+        .tm_hour =  13,
+        .tm_mday =  1,
+        .tm_mon  =  0,
+        .tm_year = 120,
+        .tm_wday =   0,
+        .tm_yday =   1,
+    };
+
+    TEST_ASSERT_EQUAL_INT(1577884331, mktime(&t));
+}
+
 static void test_rtc_localtime(void)
 {
     struct tm t;
@@ -287,6 +317,7 @@ Test *tests_rtc_tests(void)
         new_TestFixture(test_rtc_year),
         new_TestFixture(test_rtc_compare),
         new_TestFixture(test_rtc_mktime),
+        new_TestFixture(test_mktime),
         new_TestFixture(test_rtc_localtime),
     };
 

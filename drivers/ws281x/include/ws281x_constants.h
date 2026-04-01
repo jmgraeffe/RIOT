@@ -6,6 +6,8 @@
  * directory for more details.
  */
 
+#pragma once
+
 /**
  * @ingroup     drivers_ws281x
  *
@@ -15,9 +17,6 @@
  *
  * @author      Marian Buschsieweke <marian.buschsieweke@ovgu.de>
  */
-
-#ifndef WS281X_CONSTANTS_H
-#define WS281X_CONSTANTS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,8 +39,12 @@ extern "C" {
  * @brief The high-times in nanoseconds.
  * @{
  */
-#define WS281X_T_DATA_ONE_NS            (650U)
-#define WS281X_T_DATA_ZERO_NS           (325U)
+#ifndef WS281X_T_DATA_ONE_NS
+#  define WS281X_T_DATA_ONE_NS          (650U)
+#endif
+#ifndef WS281X_T_DATA_ZERO_NS
+#  define WS281X_T_DATA_ZERO_NS         (325U)
+#endif
 /**@}*/
 
 /**
@@ -69,11 +72,14 @@ extern "C" {
  * @brief   Offset for the blue color component
  */
 #define WS281X_OFFSET_B                 (2U)
+/**
+ * @brief   Offset for the white color component (only for 4-byte variants)
+ */
+#define WS281X_OFFSET_W                 (3U)
 /**@}*/
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* WS281X_CONSTANTS_H */
 /** @} */
