@@ -7,10 +7,10 @@ PKG_LICENSE=Apache-2.0
 include $(RIOTBASE)/pkg/pkg.mk
 
 JERRY_PROFILE ?= minimal # Other possible values are es.next, es5.1 and es2015-subset
-JERRY_HEAP ?= 160  # kB
+JERRY_HEAP ?= 120  # kB
 JERRY_STACK ?= 0  # kB
 JERRY_GC_LIMIT ?= 0  # Use default value, e.g. 1/32 of total heap size
-JERRY_GC_MARK_LIMIT ?= 8  # maximum recursion depth during GC mark phase
+JERRY_GC_MARK_LIMIT ?= 16  # maximum recursion depth during GC mark phase
 
 EXT_CFLAGS := -D__TARGET_RIOT
 EXT_CFLAGS += -Wno-pedantic
