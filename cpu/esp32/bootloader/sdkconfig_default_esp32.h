@@ -25,7 +25,11 @@ extern "C" {
 #  define CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ 160
 #endif
 
+/* main clock crystal frequency in MHz, boards with a different crystal
+ * (e.g. 26 MHz) can override it, 0 means auto-detection */
+#ifndef CONFIG_XTAL_FREQ
 #define CONFIG_XTAL_FREQ 40
+#endif
 
 #define CONFIG_ESP_DEBUG_OCDAWARE 1
 
